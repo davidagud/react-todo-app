@@ -24,8 +24,28 @@ class Todo extends React.Component {
   }
 
   handleSubmit(event){
-    console.log("Where submit will happen");
-    //this.setState({})
+    let id = this.props.id || this.state._id;
+
+    if(id == "" || id == undefined){
+      fetch('http://localhost:3000/todos', {
+        method: 'post',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          done: this.state.done,
+          text: this.state.text
+        })
+      }).then(response => response.json())
+      .then(data => this.setState({ _id: data._id }));
+    } else {
+      fetch(`http://localhost:3000/todos/${id}`, {
+        method: 'put',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          done: this.state.done,
+          text: this.state.text
+        })
+      })
+    }
   }
 
   render(){
@@ -45,8 +65,16 @@ class TodoList extends React.Component{
   constructor(props){
     super(props);
 
-    this.state = { todos: [{ _id: 1, text: 'Item 1', done: false}, { _id: 1, text: 'Item 2', done: false}, { _id: 1, text: 'Item 3', done: true}] };
+    this.state = { todos: [] };
     this.newTodo = this.newTodo.bind(this);
+  }
+
+  componentDidMount(){
+    fetch('http://localhost:3000/todos/')
+      .then(response => response.json())
+      .then(data => {
+        this.setState({ todos: data.todos });
+      });
   }
 
   newTodo(event){
@@ -58,7 +86,7 @@ class TodoList extends React.Component{
   }
 
   render() {
-    const todoList = this.state.todos.map((todo) => <Todo key={todo._id.toString()} text={todo.text} done={todo.done} />
+    const todoList = this.state.todos.map((todo) => <Todo id={todo._id} key={todo._id.toString()} text={todo.text} done={todo.done} />
   );
 
     return <React.Fragment>
